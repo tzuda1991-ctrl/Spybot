@@ -13,18 +13,18 @@ object AppPreferences {
     }
 
     fun saveToken(context: Context, token: String) {
-        getPreferences(context).edit().putString(KEY_BOT_TOKEN, token).apply()
+        getPreferences(context).edit().putString(KEY_BOT_TOKEN, token.trim()).apply()
     }
 
     fun getToken(context: Context): String? {
-        return getPreferences(context).getString(KEY_BOT_TOKEN, null)
+        return getPreferences(context).getString(KEY_BOT_TOKEN, null)?.trim()
     }
 
     fun saveChatId(context: Context, chatId: String) {
-        getPreferences(context).edit().putString(KEY_CHAT_ID, chatId).apply()
+        getPreferences(context).edit().putString(KEY_CHAT_ID, chatId.trim()).apply()
     }
 
     fun getChatId(context: Context): String? {
-        return getPreferences(context).getString(KEY_CHAT_ID, null)
+        return getPreferences(context).getString(KEY_CHAT_ID, null)?.trim()
     }
 }
