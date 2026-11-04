@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:background="#121212">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Telegram Configuration"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/et_bot_token"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Bot Token (e.g., 12345:ABC...)"
+        android:textColor="#FFFFFF"
+        android:inputType="textPassword"
+        android:layout_marginBottom="16dp"/>
+
+    <EditText
+        android:id="@+id/et_chat_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Your Chat ID (Numeric)"
+        android:textColor="#FFFFFF"
+        android:inputType="number"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btn_save"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="SAVE SETTINGS"
+        android:backgroundTint="#4CAF50"
+        android:textColor="#FFFFFF"/>
+
+</LinearLayout>
