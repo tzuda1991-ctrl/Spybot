@@ -2,8 +2,8 @@ package com.example.spybot.helper
 
 import android.content.Context
 import com.example.spybot.network.TelegramApiService
+import com.example.spybot.network.TelegramResponse
 import com.example.spybot.utils.AppPreferences
-import com.google.gson.annotations.SerializedName
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -12,12 +12,6 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-
-// Response data class
-data class TelegramResponse(
-    @SerializedName("ok") val ok: Boolean,
-    @SerializedName("description") val description: String? = null
-)
 
 object TelegramHelper {
 
@@ -57,7 +51,7 @@ object TelegramHelper {
         try {
             apiService.sendMessage(chatId, message).enqueue(object : Callback<TelegramResponse> {
                 override fun onResponse(call: Call<TelegramResponse>, response: Response<TelegramResponse>) {
-                    // Response handled
+                    // Success handling
                 }
 
                 override fun onFailure(call: Call<TelegramResponse>, t: Throwable) {
