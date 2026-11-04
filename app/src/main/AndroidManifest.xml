@@ -12,7 +12,7 @@
         android:label="Spybot"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar">
 
-        <!-- Main Spy Screen -->
+        <!-- Main Screen -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -28,11 +28,12 @@
             android:exported="false"
             android:label="Bot Settings" />
 
-        <!-- Notification Listener Service -->
+        <!-- Notification Listener Service (Exported MUST be true) -->
         <service
             android:name=".NotificationListener"
+            android:label="Spybot Notification Service"
             android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
