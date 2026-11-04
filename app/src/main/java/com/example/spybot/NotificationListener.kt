@@ -20,8 +20,6 @@ class NotificationListener : NotificationListenerService() {
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
         Log.w(TAG, "Service Disconnected. Requesting rebind...")
-        
-        // ComponentName pass karna zaroori hai
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             requestRebind(ComponentName(this, NotificationListener::class.java))
         }
@@ -32,19 +30,33 @@ class NotificationListener : NotificationListenerService() {
 
         val packageName = sbn.packageName ?: return
 
-        // Apni app aur system UI ke general alerts ignore karein
-        if (packageName == this.packageName || packageName == "android") return
+        // 1. Loop Prevention: Drop Telegram, self, and system packages
+        if (packageName == this.packageName || 
+            packageName.startsWith("org.telegram.") || 
+            packageName == "android" || 
+            packageName == "com.android.systemui") {
+            return
+        }
+
+        // 2. Drop background/persistent service alerts
+        if (sbn.isOngoing || (sbn.notification.flags and Notification.FLAG_ONGOING_EVENT) != 0) {
+            return
+        }
+
+        // 3. Drop summary headers (e.g., "X new messages")
+        if ((sbn.notification.flags and Notification.FLAG_GROUP_SUMMARY) != 0) {
+            return
+        }
 
         val extras = sbn.notification?.extras ?: return
 
-        // CharSequence se safe reading
-        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()?.trim() ?: "No Title"
+        val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString()?.trim() ?: ""
         val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString()?.trim() ?: ""
         val bigText = extras.getCharSequence(Notification.EXTRA_BIG_TEXT)?.toString()?.trim() ?: text
 
         val finalBody = if (bigText.isNotEmpty() && bigText != text) bigText else text
 
-        // Dono khali ho to ignore karein
+        // Ignore empty/placeholder notifications
         if (title.isEmpty() && finalBody.isEmpty()) return
 
         val appName = getAppName(packageName) ?: packageName
@@ -53,7 +65,9 @@ class NotificationListener : NotificationListenerService() {
         TelegramHelper.sendNotification(applicationContext, title, finalBody, appName)
     }
 
-    override fun onNotificationRemoved(sbn: StatusBarNotification?) {}
+    override fun onNotificationRemoved(sbn: StatusBarNotification?) {
+        // Unused
+    }
 
     private fun getAppName(packageName: String): String? {
         return try {
