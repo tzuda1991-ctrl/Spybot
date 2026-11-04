@@ -26,7 +26,6 @@ class MainActivity : AppCompatActivity() {
         btnSettings = findViewById(R.id.btn_settings)
         tvStatus = findViewById(R.id.tv_status)
 
-        // Post Notifications permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
@@ -35,12 +34,12 @@ class MainActivity : AppCompatActivity() {
 
         btnStart.setOnClickListener {
             if (!isNotificationListenerEnabled()) {
-                Toast.makeText(this, "Please enable Notification Access first", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Notification Access allow karein", Toast.LENGTH_SHORT).show()
                 openNotificationAccessSettings()
             } else {
-                // System ko force re-bind karne ka clean tarika
                 toggleNotificationListenerService()
-                Toast.makeText(this, "Spy Mode Active & Listening!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Spy Mode Active!", Toast.LENGTH_SHORT).show()
+                updateUiStatus()
             }
         }
 
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity() {
             btnStart.text = "ENABLE PERMISSION"
         } else {
             tvStatus.text = "System Ready. Monitoring Active."
-            btnStart.text = "START SPYING"
+            btnStart.text = "RESTART LISTENER"
         }
     }
 
@@ -73,11 +72,10 @@ class MainActivity : AppCompatActivity() {
         try {
             startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
         } catch (e: Exception) {
-            Toast.makeText(this, "Open Notification Access manually from Settings", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Manually Settings > Notification Access open karein", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Android background restriction bypass karne ke liye service ko reset/kickstart karta hai
     private fun toggleNotificationListenerService() {
         val componentName = ComponentName(this, NotificationListener::class.java)
         packageManager.setComponentEnabledSetting(
