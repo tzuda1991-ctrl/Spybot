@@ -1,6 +1,8 @@
 package com.example.spybot
 
 import android.app.Notification
+import android.content.ComponentName
+import android.os.Build
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import android.util.Log
@@ -18,7 +20,11 @@ class NotificationListener : NotificationListenerService() {
     override fun onListenerDisconnected() {
         super.onListenerDisconnected()
         Log.w(TAG, "Service Disconnected. Requesting rebind...")
-        requestRebind()
+        
+        // ComponentName pass karna zaroori hai
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            requestRebind(ComponentName(this, NotificationListener::class.java))
+        }
     }
 
     override fun onNotificationPosted(sbn: StatusBarNotification?) {
