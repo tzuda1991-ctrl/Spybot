@@ -39,7 +39,7 @@
         android:id="@+id/btn_settings"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="⚙️ Configure Bot Token & Chat ID"
+        android:text="⚙️ Configure Bot Token &amp; Chat ID"
         android:backgroundTint="#2196F3"
         android:textColor="#FFFFFF"/>
 
