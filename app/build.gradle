@@ -1,0 +1,53 @@
+plugins {
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+}
+
+android {
+    namespace = "com.example.spybot"
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "com.example.spybot"
+        minSdk = 24
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+
+        // 🔴 REPLACE THESE STRINGS WITH YOUR ACTUAL DATA
+        // Note: Keep the outer double quotes "" and escape inner ones if needed, 
+        // but usually just pasting the token string inside is enough.
+        buildConfigField("String", "BOT_TOKEN", "\"YOUR_BOT_TOKEN_HERE\"")
+        buildConfigField("String", "CHAT_ID", "\"YOUR_CHAT_ID_HERE\"")
+        
+        vectorDrawables.useSupportLibrary = true
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+        }
+    }
+    
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+    
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+}
+
+dependencies {
+    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    
+    // Networking
+    implementation("com.squareup.retrofit2:retrofit:2.9.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+}
