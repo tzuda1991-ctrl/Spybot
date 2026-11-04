@@ -1,7 +1,10 @@
 package com.example.spybot
 
 import android.Manifest
+import android.content.ComponentName
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.widget.Button
@@ -20,40 +23,72 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         btnStart = findViewById(R.id.btn_start)
-        btnSettings = findViewById(R.id.btn_settings) // New Button
+        btnSettings = findViewById(R.id.btn_settings)
         tvStatus = findViewById(R.id.tv_status)
 
-        checkPermission()
-        
-        btnStart.setOnClickListener {
-            startService(Intent(this, NotificationListener::class.java))
-            Toast.makeText(this, "Spy Mode Started!", Toast.LENGTH_SHORT).show()
+        // Post Notifications permission for Android 13+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
+            }
         }
 
-        // ✅ Open Settings to enter Token/ID
+        btnStart.setOnClickListener {
+            if (!isNotificationListenerEnabled()) {
+                Toast.makeText(this, "Please enable Notification Access first", Toast.LENGTH_SHORT).show()
+                openNotificationAccessSettings()
+            } else {
+                // System ko force re-bind karne ka clean tarika
+                toggleNotificationListenerService()
+                Toast.makeText(this, "Spy Mode Active & Listening!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         btnSettings.setOnClickListener {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
     }
 
-    private fun checkPermission() {
-        val hasNotificationPermission = checkSelfPermission(Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        
-        if (!hasNotificationPermission) {
-            requestPermissions(arrayOf(Manifest.permission.POST_NOTIFICATIONS), 101)
-        }
+    override fun onResume() {
+        super.onResume()
+        updateUiStatus()
+    }
 
-        val listenerEnabled = Settings.Secure.getString(contentResolver, "enabled_notification_listeners").contains(packageName)
-        
-        if (!listenerEnabled) {
+    private fun isNotificationListenerEnabled(): Boolean {
+        val enabledListeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners")
+        return enabledListeners != null && enabledListeners.contains(packageName)
+    }
+
+    private fun updateUiStatus() {
+        if (!isNotificationListenerEnabled()) {
             tvStatus.text = "Please enable Notification Access in Settings."
-            btnStart.isEnabled = false
-            
-            // Direct link to Notification Access Settings
-            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+            btnStart.text = "ENABLE PERMISSION"
         } else {
-            tvStatus.text = "System Ready. Press Start."
-            btnStart.isEnabled = true
+            tvStatus.text = "System Ready. Monitoring Active."
+            btnStart.text = "START SPYING"
         }
+    }
+
+    private fun openNotificationAccessSettings() {
+        try {
+            startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+        } catch (e: Exception) {
+            Toast.makeText(this, "Open Notification Access manually from Settings", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // Android background restriction bypass karne ke liye service ko reset/kickstart karta hai
+    private fun toggleNotificationListenerService() {
+        val componentName = ComponentName(this, NotificationListener::class.java)
+        packageManager.setComponentEnabledSetting(
+            componentName,
+            PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
+            PackageManager.DONT_KILL_APP
+        )
+        packageManager.setComponentEnabledSetting(
+            componentName,
+            PackageManager.COMPONENT_ENABLED_STATE_ENABLED,
+            PackageManager.DONT_KILL_APP
+        )
     }
 }
